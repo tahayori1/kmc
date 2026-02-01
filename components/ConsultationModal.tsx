@@ -122,10 +122,18 @@ const ConsultationModal: React.FC<ConsultationModalProps> = ({ car, userInfo, on
                                 </div>
                                 <div>
                                     <label className="block text-xs font-medium text-kmc-black mb-1">شهر</label>
-                                    <select value={city} onChange={(e) => setCity(e.target.value)} required className="w-full px-3 py-2 border border-kmc-light-grey rounded-lg focus:outline-none focus:ring-2 focus:ring-kmc-blue-500 focus:border-transparent bg-white">
-                                        <option value="" disabled>انتخاب کنید...</option>
-                                        {cities.map(c => <option key={c} value={c}>{c}</option>)}
-                                    </select>
+                                    <input 
+                                        list="consultation-city-options" 
+                                        type="text" 
+                                        value={city} 
+                                        onChange={(e) => setCity(e.target.value)} 
+                                        required 
+                                        className="w-full px-3 py-2 border border-kmc-light-grey rounded-lg focus:outline-none focus:ring-2 focus:ring-kmc-blue-500 focus:border-transparent bg-white"
+                                        placeholder="نام شهر..." 
+                                    />
+                                    <datalist id="consultation-city-options">
+                                        {cities.map(c => <option key={c} value={c} />)}
+                                    </datalist>
                                 </div>
                                 {formError && <p className="text-red-500 text-sm text-center">{formError}</p>}
                                 <button type="submit" disabled={!isFormValid || isSubmitting} className="w-full bg-gradient-to-r from-urgent to-red-700 hover:from-red-700 hover:to-red-800 text-white py-3 rounded-lg font-medium disabled:opacity-50 disabled:cursor-not-allowed transition-opacity shadow-lg">

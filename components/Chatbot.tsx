@@ -213,10 +213,18 @@ const Chatbot: React.FC<ChatbotProps> = ({ userInfo, onUpdateUserInfo, carModels
                             </div>
                             <div>
                                 <label className="block text-xs font-medium text-kmc-black mb-1">شهر</label>
-                                <select value={city} onChange={(e) => setCity(e.target.value)} required className="w-full px-3 py-2 border border-kmc-light-grey rounded-lg focus:outline-none focus:ring-2 focus:ring-kmc-blue-500 bg-white">
-                                    <option value="" disabled>انتخاب کنید...</option>
-                                    {cities.map(c => <option key={c} value={c}>{c}</option>)}
-                                </select>
+                                <input 
+                                    list="chatbot-city-options"
+                                    type="text" 
+                                    value={city} 
+                                    onChange={(e) => setCity(e.target.value)} 
+                                    required 
+                                    className="w-full px-3 py-2 border border-kmc-light-grey rounded-lg focus:outline-none focus:ring-2 focus:ring-kmc-blue-500 bg-white"
+                                    placeholder="نام شهر..."
+                                />
+                                <datalist id="chatbot-city-options">
+                                    {cities.map(c => <option key={c} value={c} />)}
+                                </datalist>
                             </div>
                             {formError && <p className="text-red-500 text-xs text-center">{formError}</p>}
                             <button type="submit" className="w-full bg-gradient-to-r from-kmc-orange-500 to-kmc-orange-600 text-white py-3 rounded-lg font-medium">

@@ -1,3 +1,4 @@
+
 import React, { useState, useEffect, useCallback } from 'react';
 import { UserInfo } from '../types';
 import { cities } from '../constants';
@@ -80,10 +81,18 @@ const UserProfileModal: React.FC<UserProfileModalProps> = ({ currentUserInfo, on
                         </div>
                         <div>
                             <label className="block text-sm font-medium text-kmc-black mb-2">شهر</label>
-                            <select value={city} onChange={(e) => setCity(e.target.value)} required className="w-full px-4 py-3 border border-kmc-light-grey rounded-lg focus:outline-none focus:ring-2 focus:ring-kmc-blue-500 focus:border-transparent bg-white">
-                                <option value="" disabled>انتخاب کنید...</option>
-                                {cities.map(c => <option key={c} value={c}>{c}</option>)}
-                            </select>
+                             <input 
+                                list="profile-city-options"
+                                type="text" 
+                                value={city} 
+                                onChange={(e) => setCity(e.target.value)} 
+                                required 
+                                className="w-full px-4 py-3 border border-kmc-light-grey rounded-lg focus:outline-none focus:ring-2 focus:ring-kmc-blue-500 focus:border-transparent bg-white"
+                                placeholder="نام شهر..."
+                            />
+                            <datalist id="profile-city-options">
+                                {cities.map(c => <option key={c} value={c} />)}
+                            </datalist>
                         </div>
                         
                         {message && (
