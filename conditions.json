@@ -1,0 +1,94 @@
+
+[
+  {
+    "id": 1,
+    "Status": "موجود",
+    "CarModel": "KMC J7",
+    "Model": "1403",
+    "SaleType": "صفر",
+    "PayType": "نقدی",
+    "Colors": "سفید - مشکی - خاکستری",
+    "IndeedStatus": "آزاد",
+    "DeliveryTime": "فوری",
+    "InitialDeposit": "1750",
+    "Descriptions": "تحویل آنی / سند آزاد / پلاک شده"
+  },
+  {
+    "id": 2,
+    "Status": "موجود",
+    "CarModel": "KMC J7",
+    "Model": "1403",
+    "SaleType": "کارخانه",
+    "PayType": "قسطی",
+    "Colors": "سفید - مشکی",
+    "IndeedStatus": "در رهن",
+    "DeliveryTime": "۴۵ روز کاری",
+    "InitialDeposit": "1200",
+    "Descriptions": "اقساط ۱۲ ماهه / چک صیادی / تحویل از کارخانه"
+  },
+  {
+    "id": 3,
+    "Status": "موجود",
+    "CarModel": "BAC X3PRO",
+    "Model": "1403",
+    "SaleType": "فروش‌ویژه",
+    "PayType": "نقدی",
+    "Colors": "سفید",
+    "IndeedStatus": "آزاد",
+    "DeliveryTime": "۲۰ روز کاری",
+    "InitialDeposit": "1050",
+    "Descriptions": "فروش ویژه تابستانه / تعداد محدود"
+  },
+  {
+    "id": 4,
+    "Status": "موجود",
+    "CarModel": "KMC T8",
+    "Model": "1402",
+    "SaleType": "کارکرده",
+    "PayType": "نقدی",
+    "Colors": "آبی",
+    "IndeedStatus": "آزاد",
+    "DeliveryTime": "آنی",
+    "InitialDeposit": "1400",
+    "Descriptions": "کارکرد ۲۰ هزار کیلومتر / بدون رنگ"
+  },
+  {
+    "id": 5,
+    "Status": "موجود",
+    "CarModel": "KMC A5",
+    "Model": "1403",
+    "SaleType": "کارخانه",
+    "PayType": "پیش‌فروش",
+    "Colors": "سفید - مشکی - آبی",
+    "IndeedStatus": "در رهن",
+    "DeliveryTime": "۹۰ روز کاری",
+    "InitialDeposit": "800",
+    "Descriptions": "سود مشارکت ۱۸٪ / موعد تحویل پاییز ۱۴۰۳"
+  },
+  {
+    "id": 6,
+    "Status": "موجود",
+    "CarModel": "JAC S5",
+    "Model": "1403",
+    "SaleType": "لیزینگی",
+    "PayType": "قسطی",
+    "Colors": "سفید",
+    "IndeedStatus": "در رهن لیزینگ",
+    "DeliveryTime": "۳۰ روز کاری",
+    "InitialDeposit": "900",
+    "Descriptions": "با همکاری لیزینگ معتبر / اقساط ۳۶ ماهه"
+  },
+   {
+    "id": 7,
+    "Status": "موجود",
+    "CarModel": "KMC T9",
+    "Model": "1403",
+    "SaleType": "صفر",
+    "PayType": "نقدی",
+    "Colors": "قرمز - مشکی",
+    "IndeedStatus": "آزاد",
+    "DeliveryTime": "فوری",
+    "InitialDeposit": "1950",
+    "Descriptions": "فول آپشن / آماده تحویل"
+  }
+]

@@ -1,0 +1,29 @@
+{
+  "short_name": "کرمان موتور ۲۶۰۶",
+  "name": "نمایندگی ۲۶۰۶ کرمان موتور حسینی",
+  "description": "خرید خودرو کرمان موتور، نقد و اقساط در شیراز. KMC, JAC, BAC.",
+  "icons": [
+    {
+      "src": "/icons/icon-192x192.png",
+      "type": "image/png",
+      "sizes": "192x192",
+      "purpose": "any maskable"
+    },
+    {
+      "src": "/icons/icon-512x512.png",
+      "type": "image/png",
+      "sizes": "512x512",
+      "purpose": "any maskable"
+    }
+  ],
+  "id": "/",
+  "start_url": "/",
+  "background_color": "#F9FAFA",
+  "theme_color": "#1F1F1F",
+  "display": "standalone",
+  "orientation": "portrait",
+  "scope": "/",
+  "lang": "fa",
+  "dir": "rtl",
+  "categories": ["business", "finance", "shopping"]
+}

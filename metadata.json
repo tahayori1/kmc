@@ -1,0 +1,5 @@
+{
+  "name": "Kerman Motor Dealership",
+  "description": "A web application for a Kerman Motor dealership in Shiraz, allowing users to view available cars, filter inventory, and request consultations for purchases.",
+  "requestFramePermissions": []
+}
