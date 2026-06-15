@@ -7,6 +7,7 @@ import { fetchAllConditions, submitConsultationRequest, submitUserInfo } from '.
 import Header from './components/Header';
 import Hero from './components/Hero';
 import CarInventory from './components/CarInventory';
+import InlineLeadCapture from './components/InlineLeadCapture';
 import RecentlyViewed from './components/RecentlyViewed';
 import ProgressBar from './components/ProgressBar';
 
@@ -100,6 +101,7 @@ const MainApp: React.FC = () => {
     const [allConditions, setAllConditions] = useState<CarCondition[]>(initialData.sortedConditions);
     const [carModels, setCarModels] = useState<CarModel[]>(initialData.sortedCarModels);
     const [isLoading, setIsLoading] = useState<boolean>(false);
+    const [apiHasError, setApiHasError] = useState<boolean>(false);
     
     const [selectedCondition, setSelectedCondition] = useState<CarCondition | null>(null);
     const [isConsultationModalOpen, setIsConsultationModalOpen] = useState<boolean>(false);
@@ -143,6 +145,7 @@ const MainApp: React.FC = () => {
                 const { sortedConditions, sortedCarModels } = processConditions(conditions);
                 setAllConditions(sortedConditions);
                 setCarModels(sortedCarModels);
+                setApiHasError(false);
                 localStorage.setItem('cachedConditions', JSON.stringify(conditions));
                 
                 // Load recently viewed
@@ -158,9 +161,17 @@ const MainApp: React.FC = () => {
                 }
             } else {
                  console.error("No car conditions found. The API might be down or returning empty data.");
+                 setAllConditions([]);
+                 setCarModels([]);
+                 setApiHasError(true);
+                 localStorage.removeItem('cachedConditions');
             }
         } catch (error) {
             console.error("Error loading data:", error);
+            setAllConditions([]);
+            setCarModels([]);
+            setApiHasError(true);
+            localStorage.removeItem('cachedConditions');
         } finally {
             setIsLoading(false);
         }
@@ -259,7 +270,7 @@ const MainApp: React.FC = () => {
              {isLoading && <ProgressBar />}
              
             <Header 
-                inventoryCount={allConditions.length} 
+                inventoryCount={apiHasError ? 0 : allConditions.length} 
                 callNumber={callNumber}
                 onOpenProfile={handleOpenProfile}
             />
@@ -267,16 +278,26 @@ const MainApp: React.FC = () => {
             <main className="flex-grow">
                 <Hero onConsult={handleGeneralConsultation} />
                 
-                <CarInventory 
-                    carModels={carModels} 
-                    allConditions={allConditions}
-                    onSelectCondition={handleSelectCondition}
-                    onRequestConsultation={handleRequestConsultation}
-                    onGeneralConsultation={handleGeneralConsultation}
-                    isLoading={isLoading}
-                />
+                {apiHasError ? (
+                    <section className="py-16">
+                        <div className="container mx-auto px-4 flex justify-center">
+                            <div className="w-full max-w-sm">
+                                <InlineLeadCapture onConsult={handleGeneralConsultation} />
+                            </div>
+                        </div>
+                    </section>
+                ) : (
+                    <CarInventory 
+                        carModels={carModels} 
+                        allConditions={allConditions}
+                        onSelectCondition={handleSelectCondition}
+                        onRequestConsultation={handleRequestConsultation}
+                        onGeneralConsultation={handleGeneralConsultation}
+                        isLoading={isLoading}
+                    />
+                )}
                 
-                {recentlyViewed.length > 0 && (
+                {!apiHasError && recentlyViewed.length > 0 && (
                     <RecentlyViewed 
                         conditions={recentlyViewed}
                         onSelectCondition={handleSelectCondition}

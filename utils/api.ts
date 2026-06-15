@@ -1,8 +1,28 @@
 
 import type { ApiCarCondition, CarCondition, CarModel, UserInfo } from '../types';
 import { formatPrice } from './helpers';
+import staticConditionsRaw from '../conditions.json';
 
 const BASE_API_URL = 'https://api.hoseinikhodro.com/webhook';
+
+const mapStaticToCondition = (raw: any): CarCondition => {
+    const deposit = parseInt(raw.InitialDeposit, 10);
+    const modelYear = parseInt(raw.Model, 10);
+    return {
+        id: raw.id,
+        "وضعیت": raw.Status || 'موجود',
+        "خودرو": raw.CarModel || 'نامشخص',
+        "مدل": isNaN(modelYear) ? 1403 : modelYear,
+        "نوع فروش": raw.SaleType || 'نامشخص',
+        "روش پرداخت": raw.PayType || 'نامشخص',
+        "رنگ خودرو": (raw.Colors || '').replace(/,/g, ' - '),
+        "سند": raw.IndeedStatus || 'نامشخص',
+        "تحویل": raw.DeliveryTime || 'نامشخص',
+        "پرداخت اولیه": isNaN(deposit) ? 0 : deposit,
+        "توضیحات": raw.Descriptions || 'ندارد',
+        "slug": `${raw.CarModel}-${raw.SaleType}-${raw.PayType}-${raw.id}`.replace(/\s/g, '-'),
+    };
+};
 
 const mapApiConditionToCarCondition = (apiCond: ApiCarCondition): CarCondition => {
     // Defensive parsing for numbers, with a fallback to 0 if invalid
@@ -34,11 +54,12 @@ export async function fetchAllConditions(): Promise<CarCondition[]> {
     try {
         const response = await fetch('https://api.hoseinikhodro.com/webhook/cdded59e-5173-4cce-84a0-6e2992e0489f/');
         if (!response.ok) {
-            console.error(`Failed to fetch conditions, status: ${response.status}`);
-            return [];
+            throw new Error(`Failed to fetch conditions, status: ${response.status}`);
         }
         const text = await response.text();
-        if (!text) return [];
+        if (!text) {
+            throw new Error(`Empty response from conditions API.`);
+        }
 
         const data: ApiCarCondition[] | ApiCarCondition = JSON.parse(text);
         
@@ -61,11 +82,15 @@ export async function fetchAllConditions(): Promise<CarCondition[]> {
         
         const mappedConditions = validEntries.map(mapApiConditionToCarCondition);
         const uniqueConditions = Array.from(new Map(mappedConditions.map(item => [item.id, item])).values());
+        
+        if (uniqueConditions.length === 0) {
+            throw new Error("API returned no valid conditions.");
+        }
         return uniqueConditions;
 
     } catch (error) {
         console.error("Failed to fetch or parse conditions", error);
-        return [];
+        throw error;
     }
 }
 
