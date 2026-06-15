@@ -45,7 +45,7 @@ const Hero: React.FC<HeroProps> = ({ onConsult }) => {
                         <span className="text-kmc-orange-400"> اطمینان کامل</span>
                     </h2>
                     <p className="text-base md:text-xl mb-8 opacity-90 max-w-3xl mx-auto text-white">
-                        ۴۳ سال سابقه • تحویل فوری • شرایط نقد و اقساط
+                        ۴۴ سال سابقه • تحویل فوری • شرایط نقد و اقساط
                     </p>
                     <div className="flex flex-col sm:flex-row justify-center gap-4">
                         <a href="#cars" onClick={handleScrollToCars} className="bg-gradient-to-r from-urgent to-red-700 hover:from-red-700 hover:to-red-800 text-white px-8 md:px-10 py-3 md:py-4 rounded-xl font-semibold text-base md:text-lg inline-flex items-center justify-center gap-3 hover:shadow-xl transition-all animate-pulse">

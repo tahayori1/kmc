@@ -14,7 +14,7 @@ const Footer: React.FC<FooterProps> = ({ phoneNumbers }) => {
                     <div className="lg:col-span-2">
                         <h3 className="text-xl font-bold mb-4">نمایندگی کرمان موتور ۲۶۰۶ حسینی</h3>
                         <p className="text-kmc-light-grey mb-4 leading-relaxed">
-                            شرکت حسینی خودرو شیراز، نماینده رسمی کرمان‌موتور با ۴۳ سال سابقه در زمینه خرید و فروش خودرو صفر و کارکرده به صورت نقد و اقساط.
+                            شرکت حسینی خودرو شیراز، نماینده رسمی کرمان‌موتور با ۴۴ سال سابقه در زمینه خرید و فروش خودرو صفر و کارکرده به صورت نقد و اقساط.
                         </p>
                         <div className="flex gap-4">
                             <a href="https://instagram.com/hoseinikhodro" target="_blank" rel="noopener noreferrer" className="w-10 h-10 bg-kmc-dark-grey-600 rounded-full flex items-center justify-center hover:bg-kmc-orange-500 transition-colors">
@@ -52,8 +52,7 @@ const Footer: React.FC<FooterProps> = ({ phoneNumbers }) => {
                     <div>
                         <h4 className="text-lg font-semibold mb-4">ساعات کاری</h4>
                         <div className="space-y-2 text-sm text-kmc-light-grey">
-                            <p>شنبه تا چهارشنبه:</p>
-                            <p>۸:۳۰ تا ۱۴:۰۰ و ۱۶:۰۰ تا ۱۹:۰۰</p>
+                            <p>شنبه تا چهارشنبه: ۸:۳۰ تا ۱۹</p>
                             <p>پنج‌شنبه: ۸:۳۰ تا ۱۳:۳۰</p>
                             <p>جمعه و تعطیلات: تعطیل</p>
                         </div>

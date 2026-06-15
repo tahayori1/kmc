@@ -20,14 +20,86 @@ const UserProfileModal = lazy(() => import('./components/UserProfileModal'));
 const UserInfoModal = lazy(() => import('./components/UserInfoModal'));
 const Chatbot = lazy(() => import('./components/Chatbot'));
 
-const STATIC_PHONE_NUMBERS = ['09370518538', '09004645553', '09004645552', '09004645551'];
+import staticConditionsRaw from './conditions.json';
+
+const mapStaticToCondition = (raw: any): CarCondition => {
+    const deposit = parseInt(raw.InitialDeposit, 10);
+    const modelYear = parseInt(raw.Model, 10);
+    return {
+        id: raw.id,
+        "وضعیت": raw.Status || 'موجود',
+        "خودرو": raw.CarModel || 'نامشخص',
+        "مدل": isNaN(modelYear) ? 1403 : modelYear,
+        "نوع فروش": raw.SaleType || 'نامشخص',
+        "روش پرداخت": raw.PayType || 'نامشخص',
+        "رنگ خودرو": (raw.Colors || '').replace(/,/g, ' - '),
+        "سند": raw.IndeedStatus || 'نامشخص',
+        "تحویل": raw.DeliveryTime || 'نامشخص',
+        "پرداخت اولیه": isNaN(deposit) ? 0 : deposit,
+        "توضیحات": raw.Descriptions || 'ندارد',
+        "slug": `${raw.CarModel}-${raw.SaleType}-${raw.PayType}-${raw.id}`.replace(/\s/g, '-'),
+    };
+};
+
+function processConditions(conditions: CarCondition[]) {
+    const sortedConditions = [...conditions].sort((a, b) => {
+        const priceA = typeof a['پرداخت اولیه'] === 'number' ? a['پرداخت اولیه'] : Infinity;
+        const priceB = typeof b['پرداخت اولیه'] === 'number' ? b['پرداخت اولیه'] : Infinity;
+        return priceA - priceB;
+    });
+
+    const carModelsData: { [key: string]: CarCondition[] } = {};
+    for (const cond of sortedConditions) {
+        if (!carModelsData[cond.خودرو]) {
+            carModelsData[cond.خودرو] = [];
+        }
+        carModelsData[cond.خودرو].push(cond);
+    }
+
+    const derivedCarModels: CarModel[] = Object.keys(carModelsData).map(carModelName => {
+        const modelConditions = carModelsData[carModelName];
+        const validDeposits = modelConditions
+            .map(c => c['پرداخت اولیه'])
+            .filter((p): p is number => typeof p === 'number');
+        
+        const minimumDeposit = validDeposits.length > 0 ? Math.min(...validDeposits) : 0;
+        
+        return {
+            CarModel: carModelName,
+            MinimumDeposit: minimumDeposit,
+            conditionCount: modelConditions.length
+        };
+    });
+    
+    const sortedCarModels = derivedCarModels.sort((a, b) => a.MinimumDeposit - b.MinimumDeposit);
+
+    return { sortedConditions, sortedCarModels };
+}
+
+const STATIC_PHONE_NUMBERS = ['07191690906'];
 const RECENTLY_VIEWED_KEY = 'recentlyViewedCars';
 const MAX_RECENTLY_VIEWED = 4;
 
 const MainApp: React.FC = () => {
-    const [carModels, setCarModels] = useState<CarModel[]>([]);
-    const [allConditions, setAllConditions] = useState<CarCondition[]>([]);
-    const [isLoading, setIsLoading] = useState<boolean>(true);
+    const initialData = useMemo(() => {
+        try {
+            const cached = localStorage.getItem('cachedConditions');
+            if (cached) {
+                const parsed = JSON.parse(cached);
+                if (Array.isArray(parsed) && parsed.length > 0) {
+                    return processConditions(parsed);
+                }
+            }
+        } catch (e) {
+            console.error('Failed to parse cached conditions', e);
+        }
+        const defaultMapped = (staticConditionsRaw as any[]).map(mapStaticToCondition);
+        return processConditions(defaultMapped);
+    }, []);
+
+    const [allConditions, setAllConditions] = useState<CarCondition[]>(initialData.sortedConditions);
+    const [carModels, setCarModels] = useState<CarModel[]>(initialData.sortedCarModels);
+    const [isLoading, setIsLoading] = useState<boolean>(false);
     
     const [selectedCondition, setSelectedCondition] = useState<CarCondition | null>(null);
     const [isConsultationModalOpen, setIsConsultationModalOpen] = useState<boolean>(false);
@@ -49,8 +121,8 @@ const MainApp: React.FC = () => {
 
     const [recentlyViewed, setRecentlyViewed] = useState<CarCondition[]>([]);
     
-    const [callNumber, setCallNumber] = useState('09370518538');
-    const [whatsappNumber, setWhatsappNumber] = useState('09370518538');
+    const [callNumber, setCallNumber] = useState('07191690906');
+    const [whatsappNumber, setWhatsappNumber] = useState('07191690906');
 
     const onUpdateUserInfo = useCallback(async (info: UserInfo) => {
         await submitUserInfo(info);
@@ -59,65 +131,40 @@ const MainApp: React.FC = () => {
     }, []);
     
     const loadData = useCallback(async () => {
-        setIsLoading(true);
+        // If we don't have any cached conditions (first load), then show progress bar/spinner.
+        // Otherwise, run silently (SWR) so the page is instantly responsive.
+        if (allConditions.length === 0) {
+            setIsLoading(true);
+        }
         try {
             const conditions = await fetchAllConditions();
             
-            if (conditions.length === 0) {
+            if (conditions.length > 0) {
+                const { sortedConditions, sortedCarModels } = processConditions(conditions);
+                setAllConditions(sortedConditions);
+                setCarModels(sortedCarModels);
+                localStorage.setItem('cachedConditions', JSON.stringify(conditions));
+                
+                // Load recently viewed
+                try {
+                    const storedRecentlyViewed = localStorage.getItem(RECENTLY_VIEWED_KEY);
+                    if (storedRecentlyViewed) {
+                        const ids = JSON.parse(storedRecentlyViewed) as number[];
+                        const viewedConditions = ids.map(id => sortedConditions.find(c => c.id === id)).filter(Boolean) as CarCondition[];
+                        setRecentlyViewed(viewedConditions);
+                    }
+                } catch (error) {
+                    console.error('Failed to load recently viewed cars', error);
+                }
+            } else {
                  console.error("No car conditions found. The API might be down or returning empty data.");
             }
-
-            const sortedConditions = conditions.sort((a, b) => {
-                const priceA = typeof a['پرداخت اولیه'] === 'number' ? a['پرداخت اولیه'] : Infinity;
-                const priceB = typeof b['پرداخت اولیه'] === 'number' ? b['پرداخت اولیه'] : Infinity;
-                return priceA - priceB;
-            });
-            setAllConditions(sortedConditions);
-            
-            // Load recently viewed
-            try {
-                const storedRecentlyViewed = localStorage.getItem(RECENTLY_VIEWED_KEY);
-                if (storedRecentlyViewed) {
-                    const ids = JSON.parse(storedRecentlyViewed) as number[];
-                    const viewedConditions = ids.map(id => sortedConditions.find(c => c.id === id)).filter(Boolean) as CarCondition[];
-                    setRecentlyViewed(viewedConditions);
-                }
-            } catch (error) {
-                console.error('Failed to load recently viewed cars', error);
-            }
-
-            const carModelsData: { [key: string]: CarCondition[] } = {};
-            for (const cond of sortedConditions) {
-                if (!carModelsData[cond.خودرو]) {
-                    carModelsData[cond.خودرو] = [];
-                }
-                carModelsData[cond.خودرو].push(cond);
-            }
-
-            const derivedCarModels: CarModel[] = Object.keys(carModelsData).map(carModelName => {
-                const modelConditions = carModelsData[carModelName];
-                const validDeposits = modelConditions
-                    .map(c => c['پرداخت اولیه'])
-                    .filter((p): p is number => typeof p === 'number');
-                
-                const minimumDeposit = validDeposits.length > 0 ? Math.min(...validDeposits) : 0;
-                
-                return {
-                    CarModel: carModelName,
-                    MinimumDeposit: minimumDeposit,
-                    conditionCount: modelConditions.length
-                };
-            });
-            
-            const sortedCarModels = derivedCarModels.sort((a, b) => a.MinimumDeposit - b.MinimumDeposit);
-            setCarModels(sortedCarModels);
-
         } catch (error) {
             console.error("Error loading data:", error);
         } finally {
             setIsLoading(false);
         }
-    }, []);
+    }, [allConditions.length]);
 
     // 1. Initial Data Load (Runs once)
     useEffect(() => {

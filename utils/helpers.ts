@@ -192,8 +192,8 @@ export const resetSEOMetadata = () => {
             "addressRegion": "فارس",
             "addressCountry": "IR"
         },
-        "telephone": "+989370518538",
-        "openingHours": "Sa-We 08:30-14:00, Sa-We 16:00-19:00, Th 08:30-13:30",
+        "telephone": "+987191690906",
+        "openingHours": "Sa-We 08:30-19:00, Th 08:30-13:30",
         "priceRange": "$$"
     };
     injectStructuredData(dealershipSchema);

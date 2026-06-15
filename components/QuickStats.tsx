@@ -13,7 +13,7 @@ const QuickStats: React.FC<QuickStatsProps> = ({ carModelCount, inventoryCount }
                 <div className="bg-white rounded-2xl shadow-xl p-4 md:p-8">
                     <div className="grid grid-cols-2 md:grid-cols-4 gap-4 md:gap-6">
                         <div className="text-center">
-                            <div className="text-xl md:text-3xl font-bold text-kmc-dark-grey-500 mb-2">۴۳</div>
+                            <div className="text-xl md:text-3xl font-bold text-kmc-dark-grey-500 mb-2">۴۴</div>
                             <p className="text-xs md:text-sm text-kmc-mid-grey">سال سابقه</p>
                         </div>
                         <div className="text-center">
