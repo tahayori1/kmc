@@ -50,6 +50,17 @@ const Footer: React.FC<FooterProps> = ({ phoneNumbers }) => {
                     </div>
 
                     <div>
+                        <h4 className="text-lg font-semibold mb-4">لینک‌های مفید</h4>
+                        <div className="space-y-3 text-sm mb-6">
+                            <a 
+                                href="#/consultation" 
+                                className="text-kmc-orange-400 hover:text-kmc-orange-300 font-bold transition-colors flex items-center gap-2"
+                            >
+                                <span className="w-2 h-2 bg-kmc-orange-400 rounded-full animate-ping"></span>
+                                <span>صفحه اختصاصی مشاوره و تبلیغات</span>
+                            </a>
+                        </div>
+
                         <h4 className="text-lg font-semibold mb-4">ساعات کاری</h4>
                         <div className="space-y-2 text-sm text-kmc-light-grey">
                             <p>شنبه تا چهارشنبه: ۸:۳۰ تا ۱۹</p>

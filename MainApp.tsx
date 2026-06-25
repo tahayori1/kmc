@@ -20,6 +20,7 @@ const ConsultationModal = lazy(() => import('./components/ConsultationModal'));
 const UserProfileModal = lazy(() => import('./components/UserProfileModal'));
 const UserInfoModal = lazy(() => import('./components/UserInfoModal'));
 const Chatbot = lazy(() => import('./components/Chatbot'));
+const ConsultationPage = lazy(() => import('./components/ConsultationPage'));
 
 import staticConditionsRaw from './conditions.json';
 
@@ -122,6 +123,15 @@ const MainApp: React.FC = () => {
     });
 
     const [recentlyViewed, setRecentlyViewed] = useState<CarCondition[]>([]);
+    const [currentHash, setCurrentHash] = useState<string>(window.location.hash);
+
+    useEffect(() => {
+        const handleHashChangeGlobal = () => {
+            setCurrentHash(window.location.hash);
+        };
+        window.addEventListener('hashchange', handleHashChangeGlobal);
+        return () => window.removeEventListener('hashchange', handleHashChangeGlobal);
+    }, []);
     
     const [callNumber, setCallNumber] = useState('07191690906');
     const [whatsappNumber, setWhatsappNumber] = useState('07191690906');
@@ -264,6 +274,25 @@ const MainApp: React.FC = () => {
         }
         setPostUserInfoAction(null);
     };
+
+    if (currentHash.startsWith('#/consultation')) {
+        return (
+            <Suspense fallback={
+                <div className="flex flex-col items-center justify-center h-screen bg-kmc-beige-100" role="status" aria-label="Loading page">
+                    <div className="w-12 h-12 border-4 border-kmc-orange-200 border-t-kmc-orange-600 rounded-full animate-spin mb-4"></div>
+                    <div className="text-kmc-dark-grey-500 font-bold text-lg">کرمان موتور ۲۶۰۶ حسینی</div>
+                </div>
+            }>
+                <ConsultationPage 
+                    availableCarModels={carModels.map(m => m.CarModel)} 
+                    onBackToHome={() => {
+                        window.location.hash = '';
+                    }} 
+                    callNumber={callNumber}
+                />
+            </Suspense>
+        );
+    }
 
     return (
         <div className="min-h-screen bg-kmc-beige-100 flex flex-col">
