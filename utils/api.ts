@@ -1,28 +1,8 @@
 
 import type { ApiCarCondition, CarCondition, CarModel, UserInfo } from '../types';
 import { formatPrice } from './helpers';
-import staticConditionsRaw from '../conditions.json';
 
 const BASE_API_URL = 'https://api.hoseinikhodro.com/webhook';
-
-const mapStaticToCondition = (raw: any): CarCondition => {
-    const deposit = parseInt(raw.InitialDeposit, 10);
-    const modelYear = parseInt(raw.Model, 10);
-    return {
-        id: raw.id,
-        "وضعیت": raw.Status || 'موجود',
-        "خودرو": raw.CarModel || 'نامشخص',
-        "مدل": isNaN(modelYear) ? 1403 : modelYear,
-        "نوع فروش": raw.SaleType || 'نامشخص',
-        "روش پرداخت": raw.PayType || 'نامشخص',
-        "رنگ خودرو": (raw.Colors || '').replace(/,/g, ' - '),
-        "سند": raw.IndeedStatus || 'نامشخص',
-        "تحویل": raw.DeliveryTime || 'نامشخص',
-        "پرداخت اولیه": isNaN(deposit) ? 0 : deposit,
-        "توضیحات": raw.Descriptions || 'ندارد',
-        "slug": `${raw.CarModel}-${raw.SaleType}-${raw.PayType}-${raw.id}`.replace(/\s/g, '-'),
-    };
-};
 
 const mapApiConditionToCarCondition = (apiCond: ApiCarCondition): CarCondition => {
     // Defensive parsing for numbers, with a fallback to 0 if invalid

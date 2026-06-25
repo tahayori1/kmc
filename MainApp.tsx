@@ -22,26 +22,9 @@ const UserInfoModal = lazy(() => import('./components/UserInfoModal'));
 const Chatbot = lazy(() => import('./components/Chatbot'));
 const ConsultationPage = lazy(() => import('./components/ConsultationPage'));
 
-import staticConditionsRaw from './conditions.json';
 
-const mapStaticToCondition = (raw: any): CarCondition => {
-    const deposit = parseInt(raw.InitialDeposit, 10);
-    const modelYear = parseInt(raw.Model, 10);
-    return {
-        id: raw.id,
-        "وضعیت": raw.Status || 'موجود',
-        "خودرو": raw.CarModel || 'نامشخص',
-        "مدل": isNaN(modelYear) ? 1403 : modelYear,
-        "نوع فروش": raw.SaleType || 'نامشخص',
-        "روش پرداخت": raw.PayType || 'نامشخص',
-        "رنگ خودرو": (raw.Colors || '').replace(/,/g, ' - '),
-        "سند": raw.IndeedStatus || 'نامشخص',
-        "تحویل": raw.DeliveryTime || 'نامشخص',
-        "پرداخت اولیه": isNaN(deposit) ? 0 : deposit,
-        "توضیحات": raw.Descriptions || 'ندارد',
-        "slug": `${raw.CarModel}-${raw.SaleType}-${raw.PayType}-${raw.id}`.replace(/\s/g, '-'),
-    };
-};
+// No static conditions fallback imported here to avoid offline access
+
 
 function processConditions(conditions: CarCondition[]) {
     const sortedConditions = [...conditions].sort((a, b) => {
@@ -83,25 +66,9 @@ const RECENTLY_VIEWED_KEY = 'recentlyViewedCars';
 const MAX_RECENTLY_VIEWED = 4;
 
 const MainApp: React.FC = () => {
-    const initialData = useMemo(() => {
-        try {
-            const cached = localStorage.getItem('cachedConditions');
-            if (cached) {
-                const parsed = JSON.parse(cached);
-                if (Array.isArray(parsed) && parsed.length > 0) {
-                    return processConditions(parsed);
-                }
-            }
-        } catch (e) {
-            console.error('Failed to parse cached conditions', e);
-        }
-        const defaultMapped = (staticConditionsRaw as any[]).map(mapStaticToCondition);
-        return processConditions(defaultMapped);
-    }, []);
-
-    const [allConditions, setAllConditions] = useState<CarCondition[]>(initialData.sortedConditions);
-    const [carModels, setCarModels] = useState<CarModel[]>(initialData.sortedCarModels);
-    const [isLoading, setIsLoading] = useState<boolean>(false);
+    const [allConditions, setAllConditions] = useState<CarCondition[]>([]);
+    const [carModels, setCarModels] = useState<CarModel[]>([]);
+    const [isLoading, setIsLoading] = useState<boolean>(true);
     const [apiHasError, setApiHasError] = useState<boolean>(false);
     
     const [selectedCondition, setSelectedCondition] = useState<CarCondition | null>(null);
@@ -111,16 +78,7 @@ const MainApp: React.FC = () => {
     const [postUserInfoAction, setPostUserInfoAction] = useState<'profile' | null>(null);
     const [isChatOpen, setIsChatOpen] = useState<boolean>(false);
 
-    const [userInfo, setUserInfo] = useState<UserInfo | null>(() => {
-        try {
-            const storedUserInfo = localStorage.getItem('userInfo');
-            return storedUserInfo ? JSON.parse(storedUserInfo) : null;
-        } catch (error) {
-            console.error('Failed to parse user info from localStorage', error);
-            localStorage.removeItem('userInfo');
-            return null;
-        }
-    });
+    const [userInfo, setUserInfo] = useState<UserInfo | null>(null);
 
     const [recentlyViewed, setRecentlyViewed] = useState<CarCondition[]>([]);
     const [currentHash, setCurrentHash] = useState<string>(window.location.hash);
@@ -138,54 +96,34 @@ const MainApp: React.FC = () => {
 
     const onUpdateUserInfo = useCallback(async (info: UserInfo) => {
         await submitUserInfo(info);
-        localStorage.setItem('userInfo', JSON.stringify(info));
         setUserInfo(info);
     }, []);
     
     const loadData = useCallback(async () => {
-        // If we don't have any cached conditions (first load), then show progress bar/spinner.
-        // Otherwise, run silently (SWR) so the page is instantly responsive.
-        if (allConditions.length === 0) {
-            setIsLoading(true);
-        }
+        setIsLoading(true);
         try {
             const conditions = await fetchAllConditions();
             
-            if (conditions.length > 0) {
+            if (conditions && conditions.length > 0) {
                 const { sortedConditions, sortedCarModels } = processConditions(conditions);
                 setAllConditions(sortedConditions);
                 setCarModels(sortedCarModels);
                 setApiHasError(false);
-                localStorage.setItem('cachedConditions', JSON.stringify(conditions));
-                
-                // Load recently viewed
-                try {
-                    const storedRecentlyViewed = localStorage.getItem(RECENTLY_VIEWED_KEY);
-                    if (storedRecentlyViewed) {
-                        const ids = JSON.parse(storedRecentlyViewed) as number[];
-                        const viewedConditions = ids.map(id => sortedConditions.find(c => c.id === id)).filter(Boolean) as CarCondition[];
-                        setRecentlyViewed(viewedConditions);
-                    }
-                } catch (error) {
-                    console.error('Failed to load recently viewed cars', error);
-                }
             } else {
                  console.error("No car conditions found. The API might be down or returning empty data.");
                  setAllConditions([]);
                  setCarModels([]);
                  setApiHasError(true);
-                 localStorage.removeItem('cachedConditions');
             }
         } catch (error) {
             console.error("Error loading data:", error);
             setAllConditions([]);
             setCarModels([]);
             setApiHasError(true);
-            localStorage.removeItem('cachedConditions');
         } finally {
             setIsLoading(false);
         }
-    }, [allConditions.length]);
+    }, []);
 
     // 1. Initial Data Load (Runs once)
     useEffect(() => {
@@ -229,12 +167,10 @@ const MainApp: React.FC = () => {
         setSelectedCondition(condition);
         window.location.hash = `/car/${condition.slug}`;
         
-        // Add to recently viewed
+        // Add to recently viewed in-memory list (avoiding persistent storage)
         setRecentlyViewed(prev => {
             const filtered = prev.filter(c => c.id !== condition.id);
-            const newRecent = [condition, ...filtered].slice(0, MAX_RECENTLY_VIEWED);
-            localStorage.setItem(RECENTLY_VIEWED_KEY, JSON.stringify(newRecent.map(c => c.id)));
-            return newRecent;
+            return [condition, ...filtered].slice(0, MAX_RECENTLY_VIEWED);
         });
     }, []);
 
@@ -308,10 +244,43 @@ const MainApp: React.FC = () => {
                 <Hero onConsult={handleGeneralConsultation} />
                 
                 {apiHasError ? (
-                    <section className="py-16">
-                        <div className="container mx-auto px-4 flex justify-center">
-                            <div className="w-full max-w-sm">
-                                <InlineLeadCapture onConsult={handleGeneralConsultation} />
+                    <section className="py-12 bg-kmc-beige-100">
+                        <div className="container mx-auto px-4 max-w-2xl text-center space-y-6">
+                            <div className="bg-white rounded-3xl p-6 md:p-8 shadow-xl border border-red-100 space-y-4">
+                                <div className="w-14 h-14 bg-red-50 rounded-full flex items-center justify-center mx-auto text-red-500 text-2xl">
+                                    ⚠️
+                                </div>
+                                <div className="space-y-2">
+                                    <h3 className="text-lg font-bold text-kmc-dark-grey-600">عدم دسترسی به سرور مرکزی شرایط فروش</h3>
+                                    <p className="text-xs text-kmc-mid-grey leading-relaxed">
+                                        جهت حفظ دقت و صحت اطلاعات و مبالغ خرید نقد و اقساط، دسترسی به لیست خودروها در حالت آفلاین غیرفعال شده است. لطفاً اتصال اینترنت خود را بررسی نموده و مجدداً تلاش نمایید.
+                                    </p>
+                                </div>
+                                
+                                <div className="flex justify-center">
+                                    <button
+                                        onClick={loadData}
+                                        className="bg-kmc-orange-500 hover:bg-kmc-orange-600 text-white px-5 py-2 rounded-xl font-bold transition-all text-xs flex items-center justify-center gap-1.5 shadow-md active:scale-95"
+                                    >
+                                        <svg className="w-4 h-4" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                                            <path strokeLinecap="round" strokeLinejoin="round" strokeWidth="2" d="M4 4v5h.582m15.356 2A8.001 8.001 0 1121.21 8H18" />
+                                        </svg>
+                                        <span>تلاش مجدد برای اتصال</span>
+                                    </button>
+                                </div>
+                            </div>
+
+                            <div className="bg-white rounded-3xl p-6 md:p-8 shadow-xl border border-kmc-beige-200">
+                                <div className="mb-4">
+                                    <span className="bg-kmc-orange-500/10 text-kmc-orange-600 text-[10px] font-bold px-3 py-1 rounded-full">
+                                        ثبت درخواست تماس فوری پشتیبانی ۲۴ ساعته
+                                    </span>
+                                    <h4 className="text-sm font-bold text-kmc-dark-grey-500 mt-2">دریافت آخرین شرایط فعال و کاتالوگ قیمت‌ها</h4>
+                                    <p className="text-xs text-kmc-mid-grey mt-1">با تکمیل فرم زیر، کارشناسان نمایندگی ۲۶۰۶ حسینی در اولین فرصت شرایط روز را خدمت شما اعلام خواهند کرد.</p>
+                                </div>
+                                <div className="max-w-sm mx-auto">
+                                    <InlineLeadCapture onConsult={handleGeneralConsultation} />
+                                </div>
                             </div>
                         </div>
                     </section>
